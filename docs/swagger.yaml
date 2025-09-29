@@ -1,0 +1,282 @@
+openapi: "3.0.4"
+
+info:
+  version: 0.0.1
+  title: Yadom API
+  description: Generate barcodes and qrcodes fast and reliably in your applications.
+  contact:
+    name: Andreas Vifert
+    email: andreasgylche@gmail.com
+
+servers:
+  - url: http://localhost:3900/v1
+    description: Local Development Server
+  - url: https://api.yadom.io/v1
+    description: Production Server
+
+tags:
+  - name: Barcodes
+    description: Generate barcode images of various barcode formats
+
+paths:
+  /barcodes:
+      get:
+        tags:
+          - Barcodes
+        summary: List Barcode Types
+        description: Fetch a list of supported barcode types
+        responses:
+          "200":
+            description: OK
+            content:
+              application/json:
+                schema:
+                  allOf:
+                    - $ref: '#/components/schemas/SuccessResponse'
+                    - type: object
+                      properties:
+                        data:
+                          type: array
+                          items:
+                            type: string
+                          example: ["qr", "code128", "datamatrix", "gs1-datamatrix"]
+          "500":
+            description: Internal Server Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+
+  /barcodes/qr:
+    post:
+      tags:
+        - Barcodes
+      summary: Generate QR code
+      description: Generate QR Code image
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BarcodeRequest'
+      responses:
+        "200":
+          description: QR Code image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /barcodes/code128:
+    post:
+      tags:
+        - Barcodes
+      summary: Generate Code128
+      description: Generate Code128 image
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BarcodeRequest'
+      responses:
+        "200":
+          description: Code128 image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /barcodes/datamatrix:
+    post:
+      tags:
+        - Barcodes
+      summary: Generate Datamatrix
+      description: Generate Datamatrix image
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BarcodeRequest'
+      responses:
+        "200":
+          description: Datamatrix image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /barcodes/gs1-datamatrix:
+    post:
+      tags:
+        - Barcodes
+      summary: Generate GS1 Datamatrix
+      description: Generate GS1 Datamatrix image
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GS1BarcodeRequest'
+      responses:
+        "200":
+          description: GS1 Datamatrix image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    BarcodeRequest:
+      type: object
+      properties:
+        data:
+          type: string
+          description: Data to encode in the barcode
+        imageFormat:
+          type: string
+          enum: [png, jpeg]
+          default: png
+          description: Output image format
+        width:
+          type: integer
+          description: Width of the barcode image in pixels
+          minimum: 1
+        height:
+          type: integer
+          description: Height of the barcode image in pixels
+          minimum: 1
+        quietZone:
+          type: integer
+          description: Size of the quiet zone around the barcode in pixels
+          minimum: 0
+          default: 0
+      required:
+        - data
+        - width
+        - height
+
+    GS1BarcodeRequest:
+      type: object
+      properties:
+        ais:
+          type: array
+          description: Array of GS1 Application Identifiers with their values
+          items:
+            type: object
+            properties:
+              ai:
+                type: string
+                description: GS1 Application Identifier (e.g., "01", "10", "21")
+              value:
+                type: string
+                description: Value for the Application Identifier
+            required:
+              - ai
+              - value
+        imageFormat:
+          type: string
+          enum: [png, jpeg]
+          default: png
+          description: Output image format
+        width:
+          type: integer
+          description: Width of the barcode image in pixels
+          minimum: 1
+        height:
+          type: integer
+          description: Height of the barcode image in pixels
+          minimum: 1
+        quietZone:
+          type: integer
+          description: Size of the quiet zone around the barcode in pixels
+          minimum: 0
+          default: 0
+      required:
+        - ais
+        - width
+        - height
+
+    SuccessResponse: 
+      type: object
+      properties: 
+        data: {}
+      required: 
+        - data
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message

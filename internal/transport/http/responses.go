@@ -14,7 +14,10 @@ import (
 func writeJSON(w http.ResponseWriter, data any, status int) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	return json.NewEncoder(w).Encode(data)
+	type envelope struct {
+		Data any `json:"data"`
+	}
+	return json.NewEncoder(w).Encode(envelope{Data: data})
 }
 
 func readJSON(w http.ResponseWriter, r *http.Request, data any) error {

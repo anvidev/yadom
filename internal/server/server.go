@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/MarceloPetrucio/go-scalar-api-reference"
 	"github.com/anvidev/yadom/internal/infra"
 	"github.com/anvidev/yadom/internal/service/barcodes"
 	handlers "github.com/anvidev/yadom/internal/transport/http"
@@ -30,8 +32,27 @@ func New(ctx context.Context) api {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
+	r.Get("/docs", func(w http.ResponseWriter, r *http.Request) {
+		html, err := scalar.ApiReferenceHTML(&scalar.Options{
+			SpecURL: "./docs/swagger.yaml",
+			CustomOptions: scalar.CustomOptions{
+				PageTitle: "Yadom API documentation",
+			},
+			Theme:              scalar.ThemePurple,
+			HideModels:         true,
+			HideDownloadButton: true,
+		})
+
+		if err != nil {
+			fmt.Printf("%v", err)
+		}
+
+		fmt.Fprintln(w, html)
+	})
+
 	r.Route("/v1", func(r chi.Router) {
 		r.Route("/barcodes", func(r chi.Router) {
+			r.Get("/", barcodeHandlers.HandleListBarcodeTypes)
 			r.Post("/qr", barcodeHandlers.HandleQR)
 			r.Post("/code128", barcodeHandlers.HandleCode128)
 			r.Post("/datamatrix", barcodeHandlers.HandleDatamatrix)

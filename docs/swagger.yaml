@@ -11,7 +11,7 @@ info:
 servers:
   - url: http://localhost:3900/v1
     description: Local Development Server
-  - url: https://api.yadom.io/v1
+  - url: https://barcodes.yadom.io/v1
     description: Production Server
 
 tags:

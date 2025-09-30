@@ -9,4 +9,5 @@ FROM scratch
 WORKDIR /app
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app/yadom .
+COPY --from=builder /app/docs .
 ENTRYPOINT ["./yadom"]
